@@ -50,6 +50,29 @@ const getPaperHistory = async (req, res) => {
 };
 
 /**
+ * Get all committed blockchain transaction blocks across the system
+ * GET /api/blockchain/blocks
+ */
+const getBlocks = async (req, res) => {
+  try {
+    const { getAllBlocks } = require('../services/blockchainService');
+    const blocks = await getAllBlocks();
+    return res.status(200).json({
+      success: true,
+      totalBlocks: blocks.length,
+      blocks
+    });
+  } catch (error) {
+    console.error('Error fetching all blockchain blocks:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve blockchain blocks.',
+      error: error.message
+    });
+  }
+};
+
+/**
  * Verify cryptographic hash chain continuity across all blocks from Genesis #0 to Head
  * GET /api/blockchain/verify-chain
  */
@@ -142,6 +165,7 @@ const invokeChaincodeContract = async (req, res) => {
 module.exports = {
   getStatus,
   getPaperHistory,
+  getBlocks,
   verifyChain,
   queryChaincodeContract,
   invokeChaincodeContract

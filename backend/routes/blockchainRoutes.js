@@ -3,6 +3,7 @@ const router = express.Router();
 const { 
   getStatus, 
   getPaperHistory, 
+  getBlocks,
   verifyChain, 
   queryChaincodeContract, 
   invokeChaincodeContract 
@@ -11,6 +12,9 @@ const authenticate = require('../middleware/authMiddleware');
 
 // Get Blockchain Network Status & Block Height
 router.get('/status', authenticate, getStatus);
+
+// Get All Committed Blocks Across System
+router.get('/blocks', authenticate, getBlocks);
 
 // Get Immutable Block Transaction History for a Paper
 router.get('/transactions/:paperId', authenticate, getPaperHistory);

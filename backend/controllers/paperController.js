@@ -114,29 +114,21 @@ async function uploadPaper(req, res) {
       }
     });
 
-    // Step 8: Record Emulated Blockchain Anchor Transaction
-    const payloadHash = calculateSHA256(JSON.stringify({
+    // Step 8: Record Immutable Blockchain Anchor Transaction
+    const { recordTransaction } = require('../services/blockchainService');
+    await recordTransaction({
       paperId,
-      fileSha256Hash,
-      setterId: req.user.id,
-      timestamp: new Date().toISOString()
-    }));
-
-    await prisma.blockchainTransaction.create({
-      data: {
-        txId: `tx_reg_${paperId.substring(0, 8)}_${Date.now()}`,
+      action: 'REGISTER',
+      userId: req.user.id,
+      payloadData: {
         paperId,
-        action: 'REGISTER',
-        payloadHash,
-        status: 'COMMITTED',
-        rawPayload: JSON.stringify({
-          paperId,
-          subjectCode: paper.subjectCode,
-          sha256: fileSha256Hash,
-          setter: req.user.username,
-          registeredAt: new Date().toISOString()
-        })
-      }
+        subjectCode: paper.subjectCode,
+        sha256: fileSha256Hash,
+        setter: req.user.username,
+        department: paper.department,
+        registeredAt: new Date().toISOString()
+      },
+      mspId: 'Org1MSP'
     });
 
     return res.status(201).json({

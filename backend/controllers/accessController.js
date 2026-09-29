@@ -136,6 +136,23 @@ async function requestAccess(req, res) {
       });
     }
 
+    // Step 7: Record Immutable Blockchain Anchor Transaction
+    const { recordTransaction } = require('../services/blockchainService');
+    await recordTransaction({
+      paperId: id,
+      action: 'ACCESS_ATTEMPT',
+      userId: req.user.id,
+      payloadData: {
+        paperId: id,
+        userRole: req.user.role,
+        username: req.user.username,
+        result: 'GRANTED',
+        ipAddress: req.ip || '127.0.0.1',
+        timestamp: new Date().toISOString()
+      },
+      mspId: 'Org1MSP'
+    });
+
     // Return Access Grant payload
     return res.json({
       success: true,

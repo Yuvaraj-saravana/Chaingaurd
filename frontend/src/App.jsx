@@ -391,20 +391,20 @@ function DashboardContent() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2">
             <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
-              <span className="font-mono text-slate-400 font-bold block mb-1">PHASE 7 ✓</span>
-              <span className="text-slate-400">SHA-256 Integrity Audit</span>
+              <span className="font-mono text-slate-400 font-bold block mb-1">PHASE 9 ✓</span>
+              <span className="text-slate-400">Fabric Chaincode Contract</span>
             </div>
             <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
-              <span className="font-mono text-slate-400 font-bold block mb-1">PHASE 8 ✓</span>
-              <span className="text-slate-400">Hyperledger Fabric Setup</span>
+              <span className="font-mono text-slate-400 font-bold block mb-1">PHASE 10 ✓</span>
+              <span className="text-slate-400">Backend ↔ Ledger Gateway</span>
             </div>
             <div className="p-3 rounded-lg bg-purple-950/40 border border-purple-800/50">
-              <span className="font-mono text-purple-400 font-bold block mb-1">PHASE 9 (CURRENT) ✓</span>
-              <span className="text-purple-300">Chaincode (`chainguard-cc`)</span>
+              <span className="font-mono text-purple-400 font-bold block mb-1">PHASE 11 (CURRENT) ✓</span>
+              <span className="text-purple-300">Blockchain Explorer</span>
             </div>
             <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
-              <span className="font-mono text-slate-500 font-bold block mb-1">PHASE 10 (NEXT)</span>
-              <span className="text-slate-500">Backend ↔ Ledger Bridge</span>
+              <span className="font-mono text-slate-500 font-bold block mb-1">PHASE 12 (NEXT)</span>
+              <span className="text-slate-500">Immutable Audit Trail</span>
             </div>
           </div>
         </section>

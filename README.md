@@ -95,8 +95,8 @@ py -m venv venv
 - [x] **Phase 7**: SHA-256 Integrity Verification & Tamper Detection
 - [x] **Phase 8**: Hyperledger Fabric Network Setup
 - [x] **Phase 9**: Chaincode Development (`chainguard-cc`)
-- [ ] **Phase 10**: Backend ↔ Blockchain Integration
-- [ ] **Phase 11**: Blockchain Verification Dashboard
+- [x] **Phase 10**: Backend ↔ Blockchain Integration
+- [x] **Phase 11**: Blockchain Verification Dashboard
 - [ ] **Phase 12**: Audit Trail System
 - [ ] **Phase 13**: AI Anomaly Detection Service
 - [ ] **Phase 14**: Real-Time Security Alerts

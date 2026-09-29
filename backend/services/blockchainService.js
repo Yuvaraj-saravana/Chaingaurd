@@ -247,10 +247,28 @@ async function getBlockchainStatus() {
   };
 }
 
+/**
+ * Fetch all committed blockchain transaction blocks across the system
+ * @returns {Promise<Array>}
+ */
+async function getAllBlocks() {
+  await ensureGenesisBlock();
+
+  const transactions = await prisma.blockchainTransaction.findMany({
+    orderBy: { blockNumber: 'desc' }
+  });
+
+  return transactions.map(tx => ({
+    ...tx,
+    parsedPayload: tx.rawPayload ? JSON.parse(tx.rawPayload) : null
+  }));
+}
+
 module.exports = {
   ensureGenesisBlock,
   recordTransaction,
   getBlockchainHistory,
+  getAllBlocks,
   verifyBlockchainLedger,
   getBlockchainStatus
 };

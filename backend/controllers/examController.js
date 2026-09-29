@@ -205,26 +205,21 @@ async function linkPaperToExam(req, res) {
     });
 
     // Record Audit & Blockchain anchor log
-    const payloadHash = calculateSHA256(
-      JSON.stringify({ examId: id, paperId, startTime: exam.startTime, endTime: exam.endTime })
-    );
-
-    await prisma.blockchainTransaction.create({
-      data: {
-        txId: `tx_sch_${id.substring(0, 8)}_${Date.now()}`,
+    const { recordTransaction } = require('../services/blockchainService');
+    await recordTransaction({
+      paperId,
+      action: 'LINK_EXAM',
+      userId: req.user.id,
+      payloadData: {
+        examId: id,
+        examCode: exam.examCode,
         paperId,
-        action: 'AUTHORIZE_RELEASE',
-        payloadHash,
-        status: 'COMMITTED',
-        rawPayload: JSON.stringify({
-          examCode: exam.examCode,
-          paperId,
-          startTime: exam.startTime,
-          endTime: exam.endTime,
-          controller: req.user.username,
-          scheduledAt: new Date().toISOString()
-        })
-      }
+        startTime: exam.startTime,
+        endTime: exam.endTime,
+        controller: req.user.username,
+        scheduledAt: new Date().toISOString()
+      },
+      mspId: 'Org1MSP'
     });
 
     return res.json({

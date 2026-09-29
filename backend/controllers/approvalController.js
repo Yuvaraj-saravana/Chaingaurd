@@ -53,6 +53,21 @@ async function submitForReview(req, res) {
       }
     });
 
+    // Blockchain Anchor
+    const { recordTransaction } = require('../services/blockchainService');
+    await recordTransaction({
+      paperId: id,
+      action: 'SUBMIT_REVIEW',
+      userId: req.user.id,
+      payloadData: {
+        paperId: id,
+        subjectCode: paper.subjectCode,
+        setter: req.user.username,
+        submittedAt: new Date().toISOString()
+      },
+      mspId: 'Org1MSP'
+    });
+
     return res.json({
       success: true,
       message: `Paper '${paper.subjectCode}' submitted for Moderator/Reviewer audit. Status is now PENDING_REVIEW.`,
@@ -149,22 +164,20 @@ async function reviewerApprove(req, res) {
     });
 
     // Anchor Blockchain Transaction
-    await prisma.blockchainTransaction.create({
-      data: {
-        txId: `tx_rev_${id.substring(0, 8)}_${Date.now()}`,
+    const { recordTransaction } = require('../services/blockchainService');
+    await recordTransaction({
+      paperId: id,
+      action: 'APPROVE_REVIEW',
+      userId: req.user.id,
+      payloadData: {
         paperId: id,
-        action: 'APPROVE',
-        payloadHash: signatureHash,
-        status: 'COMMITTED',
-        rawPayload: JSON.stringify({
-          paperId: id,
-          approvalRole: 'REVIEWER',
-          decision,
-          approver: req.user.username,
-          signatureHash,
-          timestamp
-        })
-      }
+        approvalRole: 'REVIEWER',
+        decision,
+        approver: req.user.username,
+        signatureHash,
+        timestamp
+      },
+      mspId: 'Org2MSP'
     });
 
     return res.json({
@@ -260,22 +273,19 @@ async function controllerApprove(req, res) {
     });
 
     // Anchor Blockchain Transaction
-    await prisma.blockchainTransaction.create({
-      data: {
-        txId: `tx_ctl_${id.substring(0, 8)}_${Date.now()}`,
+    await recordTransaction({
+      paperId: id,
+      action: 'AUTHORIZE_RELEASE',
+      userId: req.user.id,
+      payloadData: {
         paperId: id,
-        action: 'AUTHORIZE_RELEASE',
-        payloadHash: signatureHash,
-        status: 'COMMITTED',
-        rawPayload: JSON.stringify({
-          paperId: id,
-          approvalRole: 'CONTROLLER',
-          decision,
-          controller: req.user.username,
-          signatureHash,
-          timestamp
-        })
-      }
+        approvalRole: 'CONTROLLER',
+        decision,
+        controller: req.user.username,
+        signatureHash,
+        timestamp
+      },
+      mspId: 'Org1MSP'
     });
 
     return res.json({

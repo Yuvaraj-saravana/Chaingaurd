@@ -25,6 +25,7 @@ export default function BlockchainExplorerModal({ paperId = null, onClose }) {
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchBlockchainData = async () => {
     setLoading(true);
@@ -44,13 +45,19 @@ export default function BlockchainExplorerModal({ paperId = null, onClose }) {
       const verifyData = await verifyRes.json();
       if (verifyData.data) setVerification(verifyData.data);
 
-      // 3. Fetch History if paperId provided
+      // 3. Fetch History (specific paper or all system blocks)
       if (paperId) {
         const historyRes = await fetch(`http://localhost:5000/api/blockchain/transactions/${paperId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const historyData = await historyRes.json();
         if (historyData.history) setHistory(historyData.history);
+      } else {
+        const blocksRes = await fetch('http://localhost:5000/api/blockchain/blocks', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const blocksData = await blocksRes.json();
+        if (blocksData.blocks) setHistory(blocksData.blocks);
       }
     } catch (err) {
       setError(err.message || 'Error loading blockchain network status.');
@@ -250,22 +257,43 @@ export default function BlockchainExplorerModal({ paperId = null, onClose }) {
 
               {/* Immutable Transaction Block Table */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-2">
                     <Database className="h-4 w-4 text-sky-400" />
-                    <span>Committed Blockchain Block Transactions ({history.length > 0 ? history.length : 'All Ledger Blocks'})</span>
+                    <span>Committed Ledger Block Transactions ({history.length} Blocks)</span>
                   </h3>
-                  <span className="text-[10px] text-slate-400 font-mono">Channel: {status?.channel}</span>
+
+                  <div className="w-full sm:w-auto">
+                    <input
+                      type="text"
+                      placeholder="Search block #, TxID, Action..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full sm:w-64 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 font-mono"
+                    />
+                  </div>
                 </div>
 
                 {history.length === 0 ? (
                   <div className="p-8 text-center bg-slate-950/60 rounded-xl border border-slate-800 text-slate-400 text-xs">
-                    Select a paper or upload a question paper to view its ledger history.
+                    No ledger transaction blocks committed yet.
                   </div>
                 ) : (
                   <div className="rounded-xl border border-slate-800 bg-slate-950/60 overflow-hidden text-xs">
                     <div className="divide-y divide-slate-800/60">
-                      {history.map((tx) => (
+                      {history
+                        .filter((tx) => {
+                          if (!searchQuery) return true;
+                          const q = searchQuery.toLowerCase();
+                          return (
+                            tx.blockNumber?.toString().includes(q) ||
+                            tx.txId?.toLowerCase().includes(q) ||
+                            tx.action?.toLowerCase().includes(q) ||
+                            tx.paperId?.toLowerCase().includes(q) ||
+                            (tx.rawPayload && tx.rawPayload.toLowerCase().includes(q))
+                          );
+                        })
+                        .map((tx) => (
                         <div 
                           key={tx.id} 
                           onClick={() => setSelectedBlock(tx)}
