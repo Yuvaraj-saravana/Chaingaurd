@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+ai-service/venv/
+ai-service/__pycache__/
+*.pyc
+
+# Environment & Secrets
+.env
+backend/.env
+ai-service/.env
+
+# Local Database & SQLite files
+*.db
+*.db-journal
+backend/prisma/*.db
+backend/prisma/*.db-journal
+
+# File storage vaults (keep directory structure with .gitkeep)
+backend/storage/encrypted_papers/*
+!backend/storage/encrypted_papers/.gitkeep
+backend/storage/keys/*
+!backend/storage/keys/.gitkeep
+
+# Build artifacts
+frontend/dist/
+frontend/build/
+.turbo/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db

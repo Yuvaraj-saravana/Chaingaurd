@@ -1,0 +1,20 @@
+{
+  "name": "chainguard-workspace",
+  "version": "1.0.0",
+  "description": "CHAINGUARD — Blockchain-Based Question Paper Leakage Prevention System",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:ai": "cd ai-service && .\\venv\\Scripts\\python.exe main.py",
+    "build:frontend": "cd frontend && npm run build"
+  },
+  "keywords": [
+    "blockchain",
+    "hyperledger-fabric",
+    "cybersecurity",
+    "examination-security"
+  ],
+  "author": "CHAINGUARD Team",
+  "license": "ISC"
+}

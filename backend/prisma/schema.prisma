@@ -1,0 +1,173 @@
+// Prisma Schema for CHAINGUARD Examination Security Platform
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  email         String    @unique
+  passwordHash  String
+  role          String    // "SETTER" | "REVIEWER" | "CONTROLLER" | "INVIGILATOR" | "ADMIN"
+  fullName      String
+  department    String
+  isActive      Boolean   @default(true)
+  failedLogins  Int       @default(0)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relationships
+  authoredPapers QuestionPaper[] @relation("PaperAuthor")
+  approvals      Approval[]      @relation("UserApprovals")
+  accessLogs     AccessLog[]     @relation("UserAccessLogs")
+  alertsTriggered SecurityAlert[] @relation("UserAlerts")
+
+  @@map("users")
+}
+
+model Exam {
+  id          String   @id @default(uuid())
+  examCode    String   @unique
+  title       String
+  course      String
+  semester    String
+  department  String
+  startTime   DateTime
+  endTime     DateTime
+  status      String   @default("SCHEDULED") // "SCHEDULED" | "ACTIVE" | "COMPLETED" | "CANCELLED"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  questionPapers QuestionPaper[]
+
+  @@map("exams")
+}
+
+model QuestionPaper {
+  id                String   @id @default(uuid())
+  title             String
+  subjectCode       String
+  course            String
+  semester          String
+  department        String
+  status            String   @default("DRAFT") // "DRAFT" | "PENDING_REVIEW" | "REVIEWER_APPROVED" | "READY_FOR_RELEASE" | "RELEASED" | "CLOSED" | "FROZEN"
+  originalFilename  String
+  fileSizeBytes     Int
+  encryptedFilePath String
+  fileSha256Hash    String
+  version           Int      @default(1)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Foreign keys
+  setterId          String
+  setter            User     @relation("PaperAuthor", fields: [setterId], references: [id])
+
+  examId            String?
+  exam              Exam?    @relation(fields: [examId], references: [id])
+
+  // Relationships
+  encryptionMetadata EncryptionMetadata?
+  approvals          Approval[]
+  accessLogs         AccessLog[]
+  securityAlerts     SecurityAlert[]
+  blockchainTx       BlockchainTransaction[]
+
+  @@map("question_papers")
+}
+
+model EncryptionMetadata {
+  id              String    @id @default(uuid())
+  paperId         String    @unique
+  algorithm       String    @default("AES-256-GCM")
+  ivHex           String
+  authTagHex      String
+  keyReference    String    // Key identifier in secure key store
+  isRevoked       Boolean   @default(false)
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
+
+  // Relationship
+  paper           QuestionPaper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+
+  @@map("encryption_metadata")
+}
+
+model Approval {
+  id              String   @id @default(uuid())
+  paperId         String
+  userId          String
+  approvalRole    String   // "REVIEWER" | "CONTROLLER"
+  decision        String   // "APPROVED" | "REJECTED" | "MODIFICATION_REQUESTED"
+  comments        String?
+  signatureHash   String?
+  actionTimestamp DateTime @default(now())
+
+  // Relationships
+  paper           QuestionPaper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  user            User          @relation("UserApprovals", fields: [userId], references: [id])
+
+  @@map("approvals")
+}
+
+model AccessLog {
+  id               String   @id @default(uuid())
+  paperId          String?
+  userId           String?
+  userRole         String
+  ipAddress        String?
+  userAgent        String?
+  attemptTimestamp DateTime @default(now())
+  action           String   // "VIEW" | "ATTEMPT" | "INTEGRITY_CHECK" | "DOWNLOAD_BLOCKED"
+  result           String   // "GRANTED" | "DENIED_PREMATURE" | "DENIED_ROLE" | "DENIED_FROZEN" | "DENIED_INTEGRITY_FAIL"
+  denialReason     String?
+
+  // Relationships
+  paper            QuestionPaper? @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  user             User?          @relation("UserAccessLogs", fields: [userId], references: [id])
+
+  @@map("access_logs")
+}
+
+model SecurityAlert {
+  id              String   @id @default(uuid())
+  alertType       String   // "PREMATURE_ACCESS" | "HASH_MISMATCH" | "RAPID_ACCESS" | "AI_ANOMALY" | "PAPER_FROZEN" | "FAILED_LOGIN"
+  severity        String   // "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+  paperId         String?
+  userId          String?
+  description     String
+  aiAnomalyScore  Float?
+  status          String   @default("NEW") // "NEW" | "INVESTIGATING" | "RESOLVED"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relationships
+  paper           QuestionPaper? @relation(fields: [paperId], references: [id], onDelete: SetNull)
+  user            User?          @relation("UserAlerts", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("security_alerts")
+}
+
+model BlockchainTransaction {
+  id            String   @id @default(uuid())
+  txId          String   @unique
+  paperId       String
+  action        String   // "REGISTER" | "APPROVE" | "AUTHORIZE_RELEASE" | "ACCESS_LOG" | "FREEZE" | "CLOSE"
+  blockNumber   Int?
+  payloadHash   String
+  status        String   @default("COMMITTED") // "COMMITTED" | "PENDING" | "FAILED"
+  rawPayload    String?
+  timestamp     DateTime @default(now())
+
+  // Relationship
+  paper         QuestionPaper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+
+  @@map("blockchain_transactions")
+}

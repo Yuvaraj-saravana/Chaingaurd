@@ -1,0 +1,64 @@
+{
+  "name": "chainguard-network-org1",
+  "version": "1.0.0",
+  "client": {
+    "organization": "Org1",
+    "connection": {
+      "timeout": {
+        "peer": {
+          "endorser": "300"
+        }
+      }
+    }
+  },
+  "organizations": {
+    "Org1": {
+      "mspid": "Org1MSP",
+      "peers": [
+        "peer0.org1.chainguard.edu"
+      ],
+      "certificateAuthorities": [
+        "ca.org1.chainguard.edu"
+      ]
+    }
+  },
+  "peers": {
+    "peer0.org1.chainguard.edu": {
+      "url": "grpcs://localhost:7051",
+      "tlsCACerts": {
+        "pem": "-----BEGIN CERTIFICATE-----\nMIICVjCCAg+gAwIBAgIQ...CHAINGUARD_ORG1_PEER_CA...\n-----END CERTIFICATE-----\n"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.org1.chainguard.edu",
+        "hostnameOverride": "peer0.org1.chainguard.edu"
+      }
+    }
+  },
+  "certificateAuthorities": {
+    "ca.org1.chainguard.edu": {
+      "url": "https://localhost:7054",
+      "caName": "ca-org1",
+      "tlsCACerts": {
+        "pem": ["-----BEGIN CERTIFICATE-----\nMIICVjCCAg+gAwIBAgIQ...CHAINGUARD_ORG1_CA...\n-----END CERTIFICATE-----\n"]
+      },
+      "httpOptions": {
+        "verify": false
+      }
+    }
+  },
+  "channels": {
+    "examchannel": {
+      "orderers": [
+        "orderer.chainguard.edu"
+      ],
+      "peers": {
+        "peer0.org1.chainguard.edu": {
+          "endorsingPeer": true,
+          "chaincodeQuery": true,
+          "ledgerQuery": true,
+          "eventSource": true
+        }
+      }
+    }
+  }
+}
